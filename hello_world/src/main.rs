@@ -1,99 +1,78 @@
-// Cargos
 use rand::Rng;
 
-fn name() {
-    print!("Oleg ");
+#[derive(Debug)]
+enum EventType {
+    Mens,
+    Womens,
 }
 
-fn s_name() {
-    println!("Glingeanu");
-}
-// Basic arithmetic function
-fn sub(a: i32, b: i32) -> i32 {
-    return a - b;
-}
-
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+struct LongJumper {
+    name: String,
+    event_type: EventType,
+    personal_best: i32,
+    seasonal_best: i32,
+    num_jumps: u32,
 }
 
-// Main Programme
+impl LongJumper {
+    fn new(name: &str, event_type: EventType, personal_best: i32) -> Self {
+        LongJumper {
+            name: name.to_owned(),
+            event_type: event_type,
+            personal_best: personal_best,
+            seasonal_best: 0,
+            num_jumps: 0,
+        }
+    }
+
+    fn record_jump(&mut self, jump: i32) {
+        self.num_jumps += 1;
+        if jump > self.personal_best {
+            self.personal_best = jump;
+        }
+        if jump > self.seasonal_best {
+            self.personal_best = jump;
+        }
+    }
+}
+
+struct Stats;
+
+impl Stats {
+    fn record_jump(long_jumper: &mut LongJumper, jump: i32) {
+        long_jumper.record_jump(jump)
+    }
+}
+
 fn main() {
-    println!("{}", sub(5, 3));
-    name();
-    s_name();
-    let age = 12;
-
-    // if statments
-    if age >= 18 {
-        println!("You are above 18");
-    }
-    // Else statement
-    else {
-        println!("You are below 18 ");
-    }
-
-    // match statement
-    let some_int = 2;
-    match some_int {
-        1 => println!("its 1"),
-        2 => println!("its 2"),
-        3 => println!("its 3"),
-        _ => println!("its another number"),
-    }
-
-    // Loop
-    let mut i = 3;
-    loop {
-        println!("{:?}", i);
-        i = i - 1;
-        if i == 0 {
-            break;
-        }
-    }
-
-    // While Loop
-    let mut x = 1;
-    while x <= 5 {
-        println!("{:?}", x);
-        x = x + 1;
-    }
-
-    let go = Direction::Up;
-    match go {
-        Direction::Down => println!("go Down"),
-        Direction::Left => println!("go Left"),
-        Direction::Right => println!("go Right"),
-        Direction::Up => println!("go Up"),
-    }
-    println!("");
-    println!("");
-
     let mut rand = rand::thread_rng();
+    println!("============ START ============");
 
-    let mut y = 0;
+    let mut jumper1: LongJumper = LongJumper::new("Oleg", EventType::Mens, rand.gen_range(0..4));
+    let mut jumper2: LongJumper = LongJumper::new("Alice", EventType::Womens, rand.gen_range(0..4));
+    let mut jumper3: LongJumper = LongJumper::new("John", EventType::Mens, rand.gen_range(0..4));
 
-    while y < 10 {
-        let mut go2 = Direction::Down;
-        let a: i32 = rand.gen_range(0..4);
+    Stats::record_jump(&mut jumper1, 10);
+    Stats::record_jump(&mut jumper1, 7);
+    Stats::record_jump(&mut jumper2, 11);
+    Stats::record_jump(&mut jumper2, 6);
+    Stats::record_jump(&mut jumper3, 1);
+    Stats::record_jump(&mut jumper3, 10);
 
-        match a {
-            0 => go2 = Direction::Up,
-            1 => go2 = Direction::Down,
-            2 => go2 = Direction::Left,
-            3 => go2 = Direction::Right,
-        }
+    let jumpers: Vec<LongJumper> = vec![jumper1, jumper2, jumper3];
+    let personal_best_jumpers: Vec<&LongJumper> = jumpers
+        .iter()
+        .filter(|jumper| jumper.seasonal_best == jumper.seasonal_best)
+        .collect();
 
-        match go2 {
-            Direction::Down => println!("go Down"),
-            Direction::Left => println!("go Left"),
-            Direction::Right => println!("go Right"),
-            Direction::Up => println!("go Up"),
-        }
-
-        y = y + 1;
+    for jumper in personal_best_jumpers {
+        println!(
+            "Name: {}, Event Type: {:?}, Personal Best: {}, Season Best: {}, Number of Jumps: {}",
+            jumper.name,
+            jumper.event_type,
+            jumper.personal_best,
+            jumper.seasonal_best,
+            jumper.num_jumps
+        );
     }
 }

@@ -1,78 +1,124 @@
+use std::io;
+extern crate rand;
 use rand::Rng;
 
-#[derive(Debug)]
-enum EventType {
-    Mens,
-    Womens,
-}
-
-struct LongJumper {
-    name: String,
-    event_type: EventType,
-    personal_best: i32,
-    seasonal_best: i32,
-    num_jumps: u32,
-}
-
-impl LongJumper {
-    fn new(name: &str, event_type: EventType, personal_best: i32) -> Self {
-        LongJumper {
-            name: name.to_owned(),
-            event_type: event_type,
-            personal_best: personal_best,
-            seasonal_best: 0,
-            num_jumps: 0,
-        }
-    }
-
-    fn record_jump(&mut self, jump: i32) {
-        self.num_jumps += 1;
-        if jump > self.personal_best {
-            self.personal_best = jump;
-        }
-        if jump > self.seasonal_best {
-            self.personal_best = jump;
-        }
-    }
-}
-
-struct Stats;
-
-impl Stats {
-    fn record_jump(long_jumper: &mut LongJumper, jump: i32) {
-        long_jumper.record_jump(jump)
-    }
-}
-
 fn main() {
-    let mut rand = rand::thread_rng();
-    println!("============ START ============");
+    // Setting up the Starting Grid
+    let plus_space = " + ";
+    let minus_space = " - ";
+    let straight_space = " | ";
+    let grid: &mut [[String; 5]; 5] = &mut [
+        [
+            " 1 ".to_string(),
+            straight_space.to_string(),
+            " 2 ".to_string(),
+            straight_space.to_string(),
+            " 3 ".to_string(),
+        ],
+        [
+            minus_space.to_string(),
+            plus_space.to_string(),
+            minus_space.to_string(),
+            plus_space.to_string(),
+            minus_space.to_string(),
+        ],
+        [
+            " 4 ".to_string(),
+            straight_space.to_string(),
+            " 5 ".to_string(),
+            straight_space.to_string(),
+            " 6 ".to_string(),
+        ],
+        [
+            minus_space.to_string(),
+            plus_space.to_string(),
+            minus_space.to_string(),
+            plus_space.to_string(),
+            minus_space.to_string(),
+        ],
+        [
+            " 7 ".to_string(),
+            straight_space.to_string(),
+            " 8 ".to_string(),
+            straight_space.to_string(),
+            " 9 ".to_string(),
+        ],
+    ];
 
-    let mut jumper1: LongJumper = LongJumper::new("Oleg", EventType::Mens, rand.gen_range(0..4));
-    let mut jumper2: LongJumper = LongJumper::new("Alice", EventType::Womens, rand.gen_range(0..4));
-    let mut jumper3: LongJumper = LongJumper::new("John", EventType::Mens, rand.gen_range(0..4));
+    // True = X;
+    // False = O;
+    // User input
+    println!("Do you want to be X's or O's? ");
+    let mut user_choice: String = String::new();
+    io::stdin()
+        .read_line(&mut user_choice)
+        .expect("Failed to read your input");
 
-    Stats::record_jump(&mut jumper1, 10);
-    Stats::record_jump(&mut jumper1, 7);
-    Stats::record_jump(&mut jumper2, 11);
-    Stats::record_jump(&mut jumper2, 6);
-    Stats::record_jump(&mut jumper3, 1);
-    Stats::record_jump(&mut jumper3, 10);
-
-    let jumpers: Vec<LongJumper> = vec![jumper1, jumper2, jumper3];
-    let personal_best_jumpers: Vec<&LongJumper> = jumpers
-        .iter()
-        .filter(|jumper| jumper.seasonal_best == jumper.seasonal_best)
-        .collect();
-
-    for jumper in personal_best_jumpers {
-        println!(
-            "Name: {}, Event Type: {:?}, Personal Best: {}, Season Best: {}, Number of Jumps: {}",
-            jumper.name,
-            jumper.event_type,
-            jumper.personal_best,
-            jumper.seasonal_best,
-            jumper.num_jumps
-        );
+    // Making user input a bool
+    let mut choice: bool = true;
+    if user_choice.trim() == "O" {
+        choice = false;
     }
+    println!("You chose {:?}", user_choice.trim());
+    let mut game_finsihed = false;
+    let counter = 5;
+    while game_finsihed == false {
+        // Where to place the users X or O
+        println!("Where do you want to place your {}", user_choice.trim());
+        printgrid(grid);
+        let mut placement: String = String::new();
+        io::stdin()
+            .read_line(&mut placement)
+            .expect("Failed to read your input");
+        let placement_int: i32 = placement.trim().parse().unwrap();
+        match placement_int {
+            1 => plot_choice(grid, placement_int, choice),
+            2 => plot_choice(grid, placement_int, choice),
+            3 => plot_choice(grid, placement_int, choice),
+            4 => plot_choice(grid, placement_int, choice),
+            5 => plot_choice(grid, placement_int, choice),
+            6 => plot_choice(grid, placement_int, choice),
+            7 => plot_choice(grid, placement_int, choice),
+            8 => plot_choice(grid, placement_int, choice),
+            9 => plot_choice(grid, placement_int, choice),
+            _ => println!("Enter again"),
+        }
+        let mut computer_choice: i32 = rand::thread_rng().gen_range(1..9);
+        if computer_choice == placement_int {
+            computer_choice = rand::thread_rng().gen_range(1..9);
+        }
+        let mut computer_ch = false;
+        if choice == false {
+            computer_ch = true;
+        }
+        plot_choice(grid, computer_choice, computer_ch)
+    }
+}
+
+fn printgrid(grid: &mut [[String; 5]; 5]) {
+    println!("================");
+    // For Loop to print out initial State of the
+    for row in grid.iter() {
+        for cel in row {
+            print!("{}", cel);
+        }
+        println!();
+    }
+
+    println!("================");
+}
+
+fn plot_choice(grid: &mut [[String; 5]; 5], choice: i32, ex_o: bool) {
+    let user_choice_in_string = choice.to_string();
+    for i in 0..grid.len() {
+        for j in 0..grid[i].len() {
+            if user_choice_in_string == grid[i][j].trim() {
+                if ex_o {
+                    let plot: String = " X ".to_string();
+                    grid[i][j] = plot;
+                }
+            }
+        }
+    }
+    printgrid(grid);
 }
